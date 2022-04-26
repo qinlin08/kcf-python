@@ -17,34 +17,6 @@ inteval = 1
 duration = 0.01
 
 
-# mouse callback function
-def draw_boundingbox(event, x, y, flags, param):
-    global selectingObject, initTracking, onTracking, ix, iy, cx, cy, w, h
-
-    if event == cv2.EVENT_LBUTTONDOWN:
-        selectingObject = True
-        onTracking = False
-        ix, iy = x, y
-        cx, cy = x, y
-
-    elif event == cv2.EVENT_MOUSEMOVE:
-        cx, cy = x, y
-
-    elif event == cv2.EVENT_LBUTTONUP:
-        selectingObject = False
-        if (abs(x - ix) > 10 and abs(y - iy) > 10):
-            w, h = abs(x - ix), abs(y - iy)
-            ix, iy = min(x, ix), min(y, iy)
-            initTracking = True
-        else:
-            onTracking = False
-
-    elif event == cv2.EVENT_RBUTTONDOWN:
-        onTracking = False
-        if (w > 0):
-            ix, iy = x - w / 2, y - h / 2
-            initTracking = True
-
 
 if __name__ == '__main__':
     tracker = kcftracker.KCFTracker(True, True, True)  # hog, fixed_window, multiscale
@@ -61,7 +33,9 @@ if __name__ == '__main__':
         print(filename)
         oimg = cv2.imread(path + "/" + filename)
         if i == 0:
-            tracker.init([200, 200, 50, 50], oimg)
+            roi = cv2.selectROI(windowName="roi", img=oimg, showCrosshair=True, fromCenter=False)
+            tracker.init([roi[0], roi[1], roi[2], roi[3]], oimg)
+            cv2.destroyAllWindows()
         else:
             boundingbox = tracker.update(oimg)
             boundingbox = map(int, boundingbox)
